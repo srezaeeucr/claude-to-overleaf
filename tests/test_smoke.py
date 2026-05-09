@@ -65,6 +65,49 @@ class TestRequire(unittest.TestCase):
         cli.require({"token": "x", "project_id": "y"}, "token", "project_id")
 
 
+class TestConfigPrecedence(unittest.TestCase):
+    """The CWD .env should override the global one key-by-key, not replace it."""
+
+    def _clear_overleaf_env(self):
+        for k in ("OVERLEAF_TOKEN", "OVERLEAF_PROJECT_ID", "REPO_PATH"):
+            os.environ.pop(k, None)
+
+    def test_cwd_env_overrides_global_per_key(self):
+        with TemporaryDirectory() as d:
+            global_env = Path(d) / "global.env"
+            global_env.write_text(
+                "OVERLEAF_TOKEN=global_token\nOVERLEAF_PROJECT_ID=global_project\n"
+            )
+            cwd_env = Path(d) / "cwd.env"
+            cwd_env.write_text("OVERLEAF_PROJECT_ID=cwd_project\n")
+            self._clear_overleaf_env()
+            with patch.object(cli, "find_env_files", return_value=[global_env, cwd_env]):
+                cfg = cli.load_config()
+            self.assertEqual(cfg["token"], "global_token")
+            self.assertEqual(cfg["project_id"], "cwd_project")
+
+    def test_only_global_env(self):
+        with TemporaryDirectory() as d:
+            global_env = Path(d) / "global.env"
+            global_env.write_text(
+                "OVERLEAF_TOKEN=tok\nOVERLEAF_PROJECT_ID=proj\n"
+            )
+            self._clear_overleaf_env()
+            with patch.object(cli, "find_env_files", return_value=[global_env]):
+                cfg = cli.load_config()
+            self.assertEqual(cfg["token"], "tok")
+            self.assertEqual(cfg["project_id"], "proj")
+
+    def test_environ_overrides_files(self):
+        with TemporaryDirectory() as d:
+            cwd_env = Path(d) / ".env"
+            cwd_env.write_text("OVERLEAF_TOKEN=file_token\n")
+            with patch.object(cli, "find_env_files", return_value=[cwd_env]):
+                with patch.dict(os.environ, {"OVERLEAF_TOKEN": "env_token"}, clear=False):
+                    cfg = cli.load_config()
+            self.assertEqual(cfg["token"], "env_token")
+
+
 class TestSkillBundling(unittest.TestCase):
     def test_skill_file_shipped_with_package(self):
         skill = Path(claude_to_overleaf.__file__).parent / "SKILL.md"

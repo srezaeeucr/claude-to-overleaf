@@ -6,9 +6,14 @@ Subcommands:
   sync    Push local HEAD's tree to Overleaf (with safety checks).
   pull    List Overleaf-only commits to cherry-pick locally.
 
-Config comes from environment variables, or a .env file searched for in:
-  1. ./ (current working directory)
-  2. ~/.config/claude-to-overleaf/
+Config sources, in precedence order (highest first):
+  1. Environment variables
+  2. ./.env (current working directory)
+  3. ~/.config/claude-to-overleaf/.env
+
+The two .env files are merged: values in the CWD .env override values from
+the global one. This lets you keep a shared OVERLEAF_TOKEN globally and put
+per-project OVERLEAF_PROJECT_ID values in each repo's local .env.
 
 Recognized keys:
   OVERLEAF_TOKEN       Personal access token (starts with olp_)
@@ -40,20 +45,25 @@ def load_env_file(path: Path) -> dict:
     return env
 
 
-def find_env_file():
-    """Look for .env in CWD, then in ~/.config/claude-to-overleaf/."""
-    for candidate in (
-        Path.cwd() / ".env",
+def find_env_files() -> list:
+    """Return existing .env files in precedence order, lowest first.
+
+    The global file at ~/.config/claude-to-overleaf/.env is the base layer;
+    a .env in the current working directory overrides keys from it. This lets
+    a user keep one shared OVERLEAF_TOKEN in the global file and per-project
+    OVERLEAF_PROJECT_ID values in each repo's local .env.
+    """
+    candidates = [
         Path.home() / ".config" / "claude-to-overleaf" / ".env",
-    ):
-        if candidate.exists():
-            return candidate
-    return None
+        Path.cwd() / ".env",
+    ]
+    return [p for p in candidates if p.exists()]
 
 
 def load_config() -> dict:
-    env_file = find_env_file()
-    file_env = load_env_file(env_file) if env_file else {}
+    file_env = {}
+    for env_file in find_env_files():
+        file_env.update(load_env_file(env_file))
 
     def pick(key, default=""):
         return os.environ.get(key) or file_env.get(key, default)

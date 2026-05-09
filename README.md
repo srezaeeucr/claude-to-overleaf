@@ -92,12 +92,7 @@ Two things from Overleaf:
 
 ### 3. Make a `.env`
 
-The tool looks for `.env` in (in order):
-
-1. Your current working directory
-2. `~/.config/claude-to-overleaf/.env`
-
-Pick whichever fits. For a global setup:
+The tool reads config from two `.env` files (CWD wins per-key, global is the base layer) plus environment variables. For a single-project setup, just put everything in one file. For a global setup:
 
 ```bash
 mkdir -p ~/.config/claude-to-overleaf
@@ -160,9 +155,13 @@ Run `claude-to-overleaf --help` for the same info from the CLI. (Or `python -m c
 
 ## Config reference
 
-All settings come from `.env` (or environment variables — env vars take precedence over `.env`).
+Settings are resolved in this order, highest precedence first:
 
-`.env` is searched for in: the current working directory first, then `~/.config/claude-to-overleaf/.env`.
+1. Environment variables
+2. `./.env` (current working directory)
+3. `~/.config/claude-to-overleaf/.env` (global)
+
+The two `.env` files are **merged** — values in CWD `.env` override only the keys they define. The global file is the base layer. So you can keep one shared `OVERLEAF_TOKEN` in the global file and just put `OVERLEAF_PROJECT_ID` in each repo's local `.env` for multi-project setups.
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
@@ -205,6 +204,28 @@ Same as Case 2, but expect conflicts during cherry-pick. Resolve by hand, then:
 git add <files>
 git cherry-pick --continue
 ```
+
+---
+
+## Multiple Overleaf projects
+
+Put your shared token once in `~/.config/claude-to-overleaf/.env`:
+
+```bash
+OVERLEAF_TOKEN=olp_your_real_token
+```
+
+Then drop a per-repo `.env` in each LaTeX project directory with just the bits that differ:
+
+```bash
+# inside ~/repos/thesis/.env
+OVERLEAF_PROJECT_ID=thesis_hex_id
+
+# inside ~/repos/conference-paper/.env
+OVERLEAF_PROJECT_ID=paper_hex_id
+```
+
+CWD overrides global per key, so the token is inherited from the global file and the project id comes from the local one. `cd` to whichever repo you want to sync, run `claude-to-overleaf sync`. Don't forget to add `.env` to each repo's `.gitignore`.
 
 ---
 

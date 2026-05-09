@@ -51,12 +51,15 @@ Two things from Overleaf:
 
 ## 3. Make a `.env`
 
-The tool looks for `.env` in (in order):
+The tool reads from two `.env` files plus environment variables. Highest precedence first:
 
-1. Your current working directory
-2. `~/.config/claude-to-overleaf/.env`
+1. Environment variables
+2. `./.env` (current working directory)
+3. `~/.config/claude-to-overleaf/.env` (global)
 
-Pick whichever fits. For a global setup:
+The two files are **merged** — CWD overrides per key, the global file is the base layer. For a single-project setup, just put everything in one file. For multiple projects, see the [Reference](reference.md#multiple-overleaf-projects).
+
+For a global setup:
 
 ```bash
 mkdir -p ~/.config/claude-to-overleaf

@@ -15,9 +15,13 @@ Run `claude-to-overleaf --help` for the same info from the CLI. (Or `python -m c
 
 ## Configuration
 
-All settings come from a `.env` file or environment variables. Env vars take precedence over `.env`.
+Settings are resolved in this order, **highest precedence first**:
 
-`.env` is searched for in the current working directory first, then `~/.config/claude-to-overleaf/.env`.
+1. Environment variables
+2. `./.env` (current working directory)
+3. `~/.config/claude-to-overleaf/.env` (global)
+
+The two `.env` files are **merged** — values in CWD `.env` override only the keys they define. The global file is the base layer. So you can keep one shared `OVERLEAF_TOKEN` in the global file and just put `OVERLEAF_PROJECT_ID` in each repo's local `.env` for multi-project setups.
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
@@ -104,8 +108,27 @@ git cherry-pick --continue
 
 The trick is step 3. Overleaf rejects non-fast-forward pushes, so the script grafts your local tree onto Overleaf's history as a brand-new commit. From Overleaf's perspective, it's a normal forward step — even though your local branch and Overleaf's branch share no recent history.
 
+## Multiple Overleaf projects
+
+Put your shared token once in `~/.config/claude-to-overleaf/.env`:
+
+```bash
+OVERLEAF_TOKEN=olp_your_real_token
+```
+
+Then drop a per-repo `.env` in each LaTeX project directory with just the bits that differ:
+
+```bash
+# inside ~/repos/thesis/.env
+OVERLEAF_PROJECT_ID=thesis_hex_id
+
+# inside ~/repos/conference-paper/.env
+OVERLEAF_PROJECT_ID=paper_hex_id
+```
+
+CWD overrides global **per key**, so the token is inherited from the global file and the project id comes from the local one. `cd` to whichever repo you want to sync, run `claude-to-overleaf sync`. Don't forget to add `.env` to each repo's `.gitignore`.
+
 ## Limitations
 
 - Assumes your LaTeX project is at the **root** of the repo. If it lives in a subfolder, you'd need `git subtree split` instead — open an issue and we'll add it.
-- One Overleaf project per `.env`. To sync multiple, drop a `.env` in each repo's directory (CWD takes precedence over the global one in `~/.config/claude-to-overleaf/`).
 - Tested on macOS. Should work on Linux. Windows is unverified.
