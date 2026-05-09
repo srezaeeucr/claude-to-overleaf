@@ -1,14 +1,12 @@
 # claude-to-overleaf
 
-**One command to push your LaTeX repo to Overleaf. No web-UI tab-juggling. No copy-paste. No "wait, did I save that?"**
+**One prompt to push your LaTeX repo to Overleaf. No web-UI tab-juggling. No copy-paste. No "wait, did I save that?"**
 
-A tiny, zero-dependency Python pipeline that turns the multi-step Overleaf-git dance into:
+A tiny, zero-dependency Python pipeline you hand to Claude Code. Edit locally in your editor of choice, commit, then say:
 
-```bash
-python3 overleaf_sync.py sync
-```
+> *"sync to overleaf"*
 
-That's it. Edit locally in your editor of choice, commit, run that command, and your Overleaf project reflects the changes within seconds.
+Claude runs the script, handles the safety checks, and your Overleaf project reflects the changes within seconds. (Prefer to run it yourself? It's also a one-liner: `python3 overleaf_sync.py sync` — see Quick start.)
 
 ---
 
@@ -27,7 +25,8 @@ This script does all of that for you, and refuses to push when it would silently
 
 ## Features
 
-- **One command to sync** — `setup`, `status`, `sync`, `pull` subcommands
+- **Prompt-driven** — designed to be invoked by Claude Code (`"sync to overleaf"`); runnable as a CLI too
+- **Four subcommands** — `setup`, `status`, `sync`, `pull`
 - **Zero `pip install`s** — pure Python 3 stdlib, runs anywhere Python runs
 - **Safe by default** — refuses to push when Overleaf is ahead, refuses to push with a dirty working tree
 - **`.env`-driven config** — your token never lives in shell history or the LaTeX repo
@@ -82,7 +81,15 @@ Adds an `overleaf` remote to your repo and runs a test fetch. `OK — 'overleaf'
 
 ### 5. Sync
 
-Edit. Commit. Push to GitHub as usual. Then:
+Edit. Commit. Push to GitHub as usual. Then either:
+
+**With Claude Code:**
+
+> *"sync to overleaf"*
+
+Claude runs the script, handles the safety checks, and reports back.
+
+**Or run it directly:**
 
 ```bash
 python3 overleaf_sync.py sync
@@ -128,8 +135,9 @@ All settings come from `.env` (or environment variables — env vars take preced
 git add .
 git commit -m "..."
 git push origin main                  # GitHub
-python3 overleaf_sync.py sync         # Overleaf
 ```
+
+Then ask Claude *"sync to overleaf"* — or run `python3 overleaf_sync.py sync` directly.
 
 ### Case 2 — someone (or you) edited on Overleaf
 
