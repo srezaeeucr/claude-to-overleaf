@@ -1,8 +1,11 @@
 # claude-to-overleaf
 
 [![CI](https://github.com/srezaeeucr/claude-to-overleaf/actions/workflows/ci.yml/badge.svg)](https://github.com/srezaeeucr/claude-to-overleaf/actions/workflows/ci.yml)
+[![Docs](https://github.com/srezaeeucr/claude-to-overleaf/actions/workflows/docs.yml/badge.svg)](https://srezaeeucr.github.io/claude-to-overleaf/)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+📖 **Full documentation:** <https://srezaeeucr.github.io/claude-to-overleaf/>
 
 **One prompt to push your LaTeX repo to Overleaf. No web-UI tab-juggling. No copy-paste. No "wait, did I save that?"**
 
