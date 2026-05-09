@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claude-to-overleaf"
+version = "0.1.0"
+description = "Sync a local Git repo to an Overleaf project — designed for prompt-driven invocation by Claude Code."
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["overleaf", "latex", "git", "sync", "claude", "claude-code"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Version Control :: Git",
+    "Topic :: Text Processing :: Markup :: LaTeX",
+]
+# No runtime dependencies — pure stdlib.
+
+[project.urls]
+Homepage = "https://github.com/srezaeeucr/claude-to-overleaf"
+Repository = "https://github.com/srezaeeucr/claude-to-overleaf"
+Issues = "https://github.com/srezaeeucr/claude-to-overleaf/issues"
+
+[project.scripts]
+claude-to-overleaf = "claude_to_overleaf.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

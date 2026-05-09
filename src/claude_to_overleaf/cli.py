@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Sync a local Git repo (root = LaTeX project) to an Overleaf project.
 
 Subcommands:
@@ -7,7 +6,11 @@ Subcommands:
   sync    Push local HEAD's tree to Overleaf (with safety checks).
   pull    List Overleaf-only commits to cherry-pick locally.
 
-Config is read from a .env file next to this script (or environment vars):
+Config comes from environment variables, or a .env file searched for in:
+  1. ./ (current working directory)
+  2. ~/.config/claude-to-overleaf/
+
+Recognized keys:
   OVERLEAF_TOKEN       Personal access token (starts with olp_)
   OVERLEAF_PROJECT_ID  Hex project id from the Overleaf git URL
   REPO_PATH            Absolute path to the local git repo
@@ -37,9 +40,20 @@ def load_env_file(path: Path) -> dict:
     return env
 
 
+def find_env_file():
+    """Look for .env in CWD, then in ~/.config/claude-to-overleaf/."""
+    for candidate in (
+        Path.cwd() / ".env",
+        Path.home() / ".config" / "claude-to-overleaf" / ".env",
+    ):
+        if candidate.exists():
+            return candidate
+    return None
+
+
 def load_config() -> dict:
-    script_dir = Path(__file__).resolve().parent
-    file_env = load_env_file(script_dir / ".env")
+    env_file = find_env_file()
+    file_env = load_env_file(env_file) if env_file else {}
 
     def pick(key, default=""):
         return os.environ.get(key) or file_env.get(key, default)
@@ -254,7 +268,3 @@ def main() -> None:
         handlers[args.cmd]()
     except subprocess.CalledProcessError as e:
         sys.exit(f"error: `{' '.join(e.cmd)}` failed with exit {e.returncode}.")
-
-
-if __name__ == "__main__":
-    main()

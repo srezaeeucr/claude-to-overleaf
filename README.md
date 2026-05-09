@@ -2,11 +2,11 @@
 
 **One prompt to push your LaTeX repo to Overleaf. No web-UI tab-juggling. No copy-paste. No "wait, did I save that?"**
 
-A tiny, zero-dependency Python pipeline you hand to Claude Code. Edit locally in your editor of choice, commit, then say:
+A tiny, zero-dependency Python package you hand to Claude Code. Edit locally in your editor of choice, commit, then say:
 
 > *"sync to overleaf"*
 
-Claude runs the script, handles the safety checks, and your Overleaf project reflects the changes within seconds. (Prefer to run it yourself? It's also a one-liner: `python3 overleaf_sync.py sync` — see Quick start.)
+Claude runs the tool, handles the safety checks, and your Overleaf project reflects the changes within seconds. (Prefer to run it yourself? Once installed it's also a one-liner: `claude-to-overleaf sync`.)
 
 ---
 
@@ -26,8 +26,9 @@ This script does all of that for you, and refuses to push when it would silently
 ## Features
 
 - **Prompt-driven** — designed to be invoked by Claude Code (`"sync to overleaf"`); runnable as a CLI too
+- **Installable as a real package** — `pipx install` it once and the `claude-to-overleaf` command lives on your PATH
 - **Four subcommands** — `setup`, `status`, `sync`, `pull`
-- **Zero `pip install`s** — pure Python 3 stdlib, runs anywhere Python runs
+- **Zero runtime dependencies** — pure Python 3 stdlib (3.8+)
 - **Safe by default** — refuses to push when Overleaf is ahead, refuses to push with a dirty working tree
 - **`.env`-driven config** — your token never lives in shell history or the LaTeX repo
 - **Idempotent setup** — re-run anytime; it'll only update the remote URL if the token rotated
@@ -37,12 +38,27 @@ This script does all of that for you, and refuses to push when it would silently
 
 ## Quick start
 
-### 1. Clone this repo
+### 1. Install
+
+The recommended way — using [pipx](https://pipx.pypa.io/) so the tool gets its own isolated environment:
 
 ```bash
-git clone git@github.com:srezaeeucr/claude-to-overleaf.git
-cd claude-to-overleaf
+pipx install git+https://github.com/srezaeeucr/claude-to-overleaf.git
 ```
+
+Or with regular pip:
+
+```bash
+pip install --user git+https://github.com/srezaeeucr/claude-to-overleaf.git
+```
+
+Either way, you should now have a `claude-to-overleaf` command on your PATH:
+
+```bash
+claude-to-overleaf --help
+```
+
+(For development: `git clone` the repo and `pip install -e .` from inside it.)
 
 ### 2. Grab your Overleaf credentials
 
@@ -57,11 +73,20 @@ Two things from Overleaf:
 
 ### 3. Make a `.env`
 
+The tool looks for `.env` in (in order):
+
+1. Your current working directory
+2. `~/.config/claude-to-overleaf/.env`
+
+Pick whichever fits. For a global setup:
+
 ```bash
-cp .env.example .env
+mkdir -p ~/.config/claude-to-overleaf
+curl -fsSL https://raw.githubusercontent.com/srezaeeucr/claude-to-overleaf/main/.env.example \
+  > ~/.config/claude-to-overleaf/.env
 ```
 
-Open `.env` and fill in:
+Then open it and fill in:
 
 ```bash
 OVERLEAF_TOKEN=olp_your_real_token
@@ -69,15 +94,15 @@ OVERLEAF_PROJECT_ID=abcdef1234567890...
 REPO_PATH=/absolute/path/to/your/latex/repo
 ```
 
-The repo at `REPO_PATH` should have your `.tex` file at the **root** (e.g. `thesis.tex`, not `thesis/main.tex`).
+The repo at `REPO_PATH` should have your `.tex` file at the **root** (e.g. `thesis.tex`, not `thesis/main.tex`). For per-project configs, drop a `.env` next to where you run the command instead.
 
 ### 4. Wire it up
 
 ```bash
-python3 overleaf_sync.py setup
+claude-to-overleaf setup
 ```
 
-Adds an `overleaf` remote to your repo and runs a test fetch. `OK — 'overleaf' is reachable.` means you're done.
+Adds an `overleaf` remote to your LaTeX repo and runs a test fetch. `OK — 'overleaf' is reachable.` means you're done.
 
 ### 5. Sync
 
@@ -87,12 +112,12 @@ Edit. Commit. Push to GitHub as usual. Then either:
 
 > *"sync to overleaf"*
 
-Claude runs the script, handles the safety checks, and reports back.
+Claude runs the tool, handles the safety checks, and reports back.
 
 **Or run it directly:**
 
 ```bash
-python3 overleaf_sync.py sync
+claude-to-overleaf sync
 ```
 
 Refresh Overleaf in the browser — the changes are there.
@@ -109,13 +134,15 @@ Refresh Overleaf in the browser — the changes are there.
 | `sync --force` | Push anyway, overwriting Overleaf-side commits. Use deliberately. |
 | `pull` | Lists Overleaf-only commits so you can `git cherry-pick` them. |
 
-Run `python3 overleaf_sync.py --help` for the same info from the CLI.
+Run `claude-to-overleaf --help` for the same info from the CLI. (Or `python -m claude_to_overleaf --help` if you'd rather not rely on the entry-point shim.)
 
 ---
 
 ## Config reference
 
 All settings come from `.env` (or environment variables — env vars take precedence over `.env`).
+
+`.env` is searched for in: the current working directory first, then `~/.config/claude-to-overleaf/.env`.
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
@@ -137,17 +164,17 @@ git commit -m "..."
 git push origin main                  # GitHub
 ```
 
-Then ask Claude *"sync to overleaf"* — or run `python3 overleaf_sync.py sync` directly.
+Then ask Claude *"sync to overleaf"* — or run `claude-to-overleaf sync` directly.
 
 ### Case 2 — someone (or you) edited on Overleaf
 
 `sync` will refuse and tell you exactly what's there. Bring those edits home first:
 
 ```bash
-python3 overleaf_sync.py pull         # see what's on Overleaf only
+claude-to-overleaf pull               # see what's on Overleaf only
 cd $REPO_PATH
 git cherry-pick <hash>                # bring each one onto local main
-python3 overleaf_sync.py sync         # now safe
+claude-to-overleaf sync               # now safe
 ```
 
 ### Case 3 — both sides edited the same file
@@ -181,7 +208,7 @@ Pick one editor per file per session, sync, then switch sides. The safety check 
 ## Troubleshooting
 
 **`error: missing required config: OVERLEAF_TOKEN`**
-No `.env` file, or that key isn't in it. Re-do Step 3.
+The tool can't find a `.env` (it looks in CWD then `~/.config/claude-to-overleaf/`) or the key isn't in it. Re-do Step 3.
 
 **`Authentication failed` during `setup`**
 Token is wrong, expired, or revoked. Generate a new one in Overleaf, update `.env`, re-run `setup`. Sanity-check the token directly:
@@ -217,5 +244,5 @@ The trick is step 3. Overleaf rejects non-fast-forward pushes, so the script gra
 ## Limitations
 
 - Assumes your LaTeX project is at the **root** of the repo. If it lives in a subfolder, you'd need `git subtree split` instead — open an issue and we'll add it.
-- One Overleaf project per local repo. To sync against multiple, clone this tool into separate folders with different `.env` files.
+- One Overleaf project per `.env`. To sync multiple, drop a `.env` in each repo's directory (CWD takes precedence over the global one in `~/.config/claude-to-overleaf/`).
 - Tested on macOS. Should work on Linux. Windows is unverified.
