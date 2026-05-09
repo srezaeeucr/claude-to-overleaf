@@ -1,7 +1,7 @@
 # claude-to-overleaf
 
 [![CI](https://github.com/srezaeeucr/claude-to-overleaf/actions/workflows/ci.yml/badge.svg)](https://github.com/srezaeeucr/claude-to-overleaf/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 **One prompt to push your LaTeX repo to Overleaf. No web-UI tab-juggling. No copy-paste. No "wait, did I save that?"**
@@ -34,7 +34,7 @@ This script does all of that for you, and refuses to push when it would silently
 - **Standalone CLI for anyone** — `claude-to-overleaf sync` works without Claude Code
 - **Installable as a real package** — `pipx install` it once and the command lives on your PATH
 - **Five subcommands** — `setup`, `status`, `sync`, `pull`, `install-skill`
-- **Zero runtime dependencies** — pure Python 3 stdlib (3.8+)
+- **Zero runtime dependencies** — pure Python 3 stdlib (3.9+)
 - **Safe by default** — refuses to push when Overleaf is ahead, or when the working tree is dirty
 - **`.env`-driven config** — your token never lives in shell history or the LaTeX repo
 - **Idempotent setup** — re-run anytime; only updates the remote URL if the token rotated
