@@ -49,6 +49,32 @@ Two things from Overleaf:
 !!! danger "Treat the token like a password"
     Anyone with it can read and write your project. Never paste it into chat, screenshots, or a tracked file. If it leaks, revoke it on Overleaf and generate a new one.
 
+## 2a. Get a local copy of your project
+
+claude-to-overleaf pushes a local Git repo to Overleaf. So you need a local Git repo paired with your Overleaf project. Pick whichever case fits you:
+
+=== "Starting from an Overleaf project (most common)"
+
+    Clone your Overleaf project locally — that gives you a Git repo whose history matches Overleaf's. Pick a directory:
+
+    ```bash
+    mkdir -p ~/Documents/overleaf
+    cd ~/Documents/overleaf
+    git clone "https://git:olp_YOUR_TOKEN@git.overleaf.com/YOUR_PROJECT_ID" my-project
+    cd my-project
+    ls   # should show main.tex etc. from your Overleaf project
+    ```
+
+    Replace `olp_YOUR_TOKEN` and `YOUR_PROJECT_ID` with your actual values from step 2.
+
+    The token in the URL is fine — `git clone` writes it to `.git/config`, which is local-only and not pushed anywhere. After this clone, your local repo has a remote named `origin` already pointing at Overleaf with auth working.
+
+=== "I already have a local LaTeX repo"
+
+    Nothing to do here. Your existing repo will be paired with Overleaf in step 4 (`setup`) — it adds a new remote called `overleaf` to your repo.
+
+    Make sure your `.tex` file is at the **root** of the repo (e.g. `thesis.tex`, not `thesis/main.tex`). Subfolder LaTeX projects need an extra `git subtree split` step — open a [GitHub issue](https://github.com/srezaeeucr/claude-to-overleaf/issues) if you need it.
+
 ## 3. Make a `.env`
 
 The tool reads from two `.env` files plus environment variables. Highest precedence first:
@@ -69,21 +95,37 @@ curl -fsSL https://raw.githubusercontent.com/srezaeeucr/claude-to-overleaf/main/
 
 Then open it and fill in:
 
-```bash
-OVERLEAF_TOKEN=olp_your_real_token
-OVERLEAF_PROJECT_ID=abcdef1234567890...
-REPO_PATH=/absolute/path/to/your/latex/repo
-```
+=== "If you cloned from Overleaf in step 2a"
 
-The repo at `REPO_PATH` should have your `.tex` file at the **root** (e.g. `thesis.tex`, not `thesis/main.tex`). For per-project configs, drop a `.env` next to where you run the command instead.
+    ```bash
+    OVERLEAF_TOKEN=olp_your_real_token
+    OVERLEAF_PROJECT_ID=abcdef1234567890...
+    OVERLEAF_REMOTE=origin
+    ```
+
+    The `OVERLEAF_REMOTE=origin` line tells the tool to use the remote `git clone` already created, instead of adding a second one called `overleaf`. You can omit `REPO_PATH` and just `cd` into the cloned directory before running `claude-to-overleaf` commands.
+
+=== "If you already had a local LaTeX repo"
+
+    ```bash
+    OVERLEAF_TOKEN=olp_your_real_token
+    OVERLEAF_PROJECT_ID=abcdef1234567890...
+    REPO_PATH=/absolute/path/to/your/latex/repo
+    ```
+
+    The repo at `REPO_PATH` should have your `.tex` file at the **root** (e.g. `thesis.tex`, not `thesis/main.tex`). For per-project configs, drop a `.env` next to where you run the command instead.
 
 ## 4. Wire it up
+
+`cd` into your LaTeX repo, then:
 
 ```bash
 claude-to-overleaf setup
 ```
 
-This adds an `overleaf` remote to your LaTeX repo and runs a test fetch. Seeing `OK — 'overleaf' is reachable.` means you're done.
+If you cloned from Overleaf in step 2a, you'll see `'origin' already configured with current token.` — the clone already set up the remote.
+
+If you started from an existing repo, this adds a new `overleaf` remote and runs a test fetch. Seeing `OK — 'overleaf' is reachable.` means you're done.
 
 ## 5. Sync
 

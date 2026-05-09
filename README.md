@@ -90,6 +90,23 @@ Two things from Overleaf:
 
 > **Treat the token like a password.** Anyone with it can read and write your project. Never paste it into chat, screenshots, or a tracked file. If it leaks, revoke it on Overleaf and generate a new one.
 
+### 2a. Get a local copy of your project
+
+claude-to-overleaf pushes a local Git repo to Overleaf — so you need a local repo paired with your project.
+
+**If you already have a local LaTeX repo paired with this Overleaf project:** skip to step 3. Just make sure your `.tex` file is at the repo root (e.g. `thesis.tex`, not `thesis/main.tex`).
+
+**Starting fresh from your Overleaf project (most common first time):** clone the Overleaf project locally:
+
+```bash
+mkdir -p ~/Documents/overleaf
+cd ~/Documents/overleaf
+git clone "https://git:olp_YOUR_TOKEN@git.overleaf.com/YOUR_PROJECT_ID" my-project
+cd my-project
+```
+
+Replace the `olp_YOUR_TOKEN` and `YOUR_PROJECT_ID` placeholders. The token in the URL is fine — git stores it in `.git/config` (local-only). After this clone, your repo has a remote called `origin` already pointing at Overleaf with auth working.
+
 ### 3. Make a `.env`
 
 The tool reads config from two `.env` files (CWD wins per-key, global is the base layer) plus environment variables. For a single-project setup, just put everything in one file. For a global setup:
@@ -100,15 +117,25 @@ curl -fsSL https://raw.githubusercontent.com/srezaeeucr/claude-to-overleaf/main/
   > ~/.config/claude-to-overleaf/.env
 ```
 
-Then open it and fill in:
+Then open it and fill in (pick the variant that matches step 2a):
+
+If you cloned from Overleaf:
+
+```bash
+OVERLEAF_TOKEN=olp_your_real_token
+OVERLEAF_PROJECT_ID=abcdef1234567890...
+OVERLEAF_REMOTE=origin
+```
+
+The `OVERLEAF_REMOTE=origin` line tells the tool to use the remote `git clone` already created instead of adding a duplicate one. You can omit `REPO_PATH` and just `cd` into the cloned directory before running the commands.
+
+If you already had a local LaTeX repo:
 
 ```bash
 OVERLEAF_TOKEN=olp_your_real_token
 OVERLEAF_PROJECT_ID=abcdef1234567890...
 REPO_PATH=/absolute/path/to/your/latex/repo
 ```
-
-The repo at `REPO_PATH` should have your `.tex` file at the **root** (e.g. `thesis.tex`, not `thesis/main.tex`). For per-project configs, drop a `.env` next to where you run the command instead.
 
 ### 4. Wire it up
 
