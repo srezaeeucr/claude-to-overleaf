@@ -4,10 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "claude-to-overleaf"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Sync a local Git repo to an Overleaf project — designed for prompt-driven invocation by Claude Code."
 readme = "README.md"
 requires-python = ">=3.8"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Saeed Rezaee" }]
 keywords = ["overleaf", "latex", "git", "sync", "claude", "claude-code"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -37,3 +40,9 @@ claude-to-overleaf = "claude_to_overleaf.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+claude_to_overleaf = ["SKILL.md"]
+
+[tool.setuptools.dynamic]
+version = { attr = "claude_to_overleaf.__version__" }

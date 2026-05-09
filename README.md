@@ -1,12 +1,16 @@
 # claude-to-overleaf
 
+[![CI](https://github.com/srezaeeucr/claude-to-overleaf/actions/workflows/ci.yml/badge.svg)](https://github.com/srezaeeucr/claude-to-overleaf/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 **One prompt to push your LaTeX repo to Overleaf. No web-UI tab-juggling. No copy-paste. No "wait, did I save that?"**
 
-A tiny, zero-dependency Python package you hand to Claude Code. Edit locally in your editor of choice, commit, then say:
+A tiny, zero-dependency Python package that ships with a [Claude Code skill](https://docs.claude.com/en/docs/claude-code/skills). Edit locally in your editor of choice, commit, then tell Claude:
 
 > *"sync to overleaf"*
 
-Claude runs the tool, handles the safety checks, and your Overleaf project reflects the changes within seconds. (Prefer to run it yourself? Once installed it's also a one-liner: `claude-to-overleaf sync`.)
+Claude invokes the skill, runs the tool, handles the safety checks, and your Overleaf project reflects the changes within seconds. (No Claude Code? It's also a normal CLI — `claude-to-overleaf sync`.)
 
 ---
 
@@ -25,13 +29,15 @@ This script does all of that for you, and refuses to push when it would silently
 
 ## Features
 
-- **Prompt-driven** — designed to be invoked by Claude Code (`"sync to overleaf"`); runnable as a CLI too
-- **Installable as a real package** — `pipx install` it once and the `claude-to-overleaf` command lives on your PATH
-- **Four subcommands** — `setup`, `status`, `sync`, `pull`
+- **Ships a Claude Code skill** — one command (`claude-to-overleaf install-skill`) drops a skill file into `~/.claude/skills/` so Claude reliably knows when and how to invoke it
+- **Prompt-driven by default** — say `"sync to overleaf"` and Claude does the rest, including handling the "Overleaf is ahead" cherry-pick flow
+- **Standalone CLI for anyone** — `claude-to-overleaf sync` works without Claude Code
+- **Installable as a real package** — `pipx install` it once and the command lives on your PATH
+- **Five subcommands** — `setup`, `status`, `sync`, `pull`, `install-skill`
 - **Zero runtime dependencies** — pure Python 3 stdlib (3.8+)
-- **Safe by default** — refuses to push when Overleaf is ahead, refuses to push with a dirty working tree
+- **Safe by default** — refuses to push when Overleaf is ahead, or when the working tree is dirty
 - **`.env`-driven config** — your token never lives in shell history or the LaTeX repo
-- **Idempotent setup** — re-run anytime; it'll only update the remote URL if the token rotated
+- **Idempotent setup** — re-run anytime; only updates the remote URL if the token rotated
 - **Works from anywhere** — point `REPO_PATH` at any LaTeX repo on disk
 
 ---
@@ -43,13 +49,13 @@ This script does all of that for you, and refuses to push when it would silently
 The recommended way — using [pipx](https://pipx.pypa.io/) so the tool gets its own isolated environment:
 
 ```bash
-pipx install git+https://github.com/srezaeeucr/claude-to-overleaf.git
+pipx install claude-to-overleaf
 ```
 
 Or with regular pip:
 
 ```bash
-pip install --user git+https://github.com/srezaeeucr/claude-to-overleaf.git
+pip install --user claude-to-overleaf
 ```
 
 Either way, you should now have a `claude-to-overleaf` command on your PATH:
@@ -59,6 +65,16 @@ claude-to-overleaf --help
 ```
 
 (For development: `git clone` the repo and `pip install -e .` from inside it.)
+
+### 1a. Install the Claude Code skill (optional, recommended)
+
+If you use Claude Code, run this once:
+
+```bash
+claude-to-overleaf install-skill
+```
+
+It drops a skill file at `~/.claude/skills/claude-to-overleaf/SKILL.md`. Restart Claude Code and from then on Claude knows to use this tool whenever you say things like *"sync to overleaf"* or *"push my latex to overleaf"* — including the right way to handle "Overleaf has commits ahead" warnings (cherry-pick first, never `--force` without asking).
 
 ### 2. Grab your Overleaf credentials
 
@@ -133,6 +149,7 @@ Refresh Overleaf in the browser — the changes are there.
 | `sync` | Pushes local HEAD's tree to Overleaf. Refuses if Overleaf is ahead, or the working tree is dirty. |
 | `sync --force` | Push anyway, overwriting Overleaf-side commits. Use deliberately. |
 | `pull` | Lists Overleaf-only commits so you can `git cherry-pick` them. |
+| `install-skill` | Installs the bundled Claude Code skill to `~/.claude/skills/claude-to-overleaf/`. |
 
 Run `claude-to-overleaf --help` for the same info from the CLI. (Or `python -m claude_to_overleaf --help` if you'd rather not rely on the entry-point shim.)
 

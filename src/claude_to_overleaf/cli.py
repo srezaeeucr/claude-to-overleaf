@@ -222,6 +222,19 @@ def cmd_sync(cfg: dict, force: bool = False) -> None:
     print("Done. Overleaf should reflect changes within seconds.")
 
 
+def cmd_install_skill() -> None:
+    """Copy the bundled SKILL.md to ~/.claude/skills/claude-to-overleaf/."""
+    src = Path(__file__).resolve().parent / "SKILL.md"
+    if not src.exists():
+        sys.exit(f"error: bundled SKILL.md not found at {src}")
+    target_dir = Path.home() / ".claude" / "skills" / "claude-to-overleaf"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / "SKILL.md"
+    target.write_text(src.read_text())
+    print(f"[install-skill] Wrote {target}")
+    print("[install-skill] Restart Claude Code to pick up the new skill.")
+
+
 def cmd_pull(cfg: dict) -> None:
     require(cfg, "token", "project_id")
     cwd = ensure_setup(cfg)
@@ -254,6 +267,10 @@ def main() -> None:
         help="Overwrite Overleaf even if it has commits ahead.",
     )
     sub.add_parser("pull", help="List Overleaf-only commits to cherry-pick.")
+    sub.add_parser(
+        "install-skill",
+        help="Install the bundled Claude Code skill to ~/.claude/skills/.",
+    )
 
     args = parser.parse_args()
     cfg = load_config()
@@ -263,6 +280,7 @@ def main() -> None:
         "status": lambda: cmd_status(cfg),
         "sync": lambda: cmd_sync(cfg, force=args.force),
         "pull": lambda: cmd_pull(cfg),
+        "install-skill": lambda: cmd_install_skill(),
     }
     try:
         handlers[args.cmd]()
